@@ -4,7 +4,6 @@ import {
   HttpClient, HttpRequest, HttpResponse, 
   HttpHeaders, HttpParams } from '@angular/common/http';
 import { BaseService } from '../base-service';
-import { ApiConfiguration } from '../api-configuration';
 import { Observable } from 'rxjs';
 import { map, filter } from 'rxjs/operators';
 
@@ -13,12 +12,11 @@ import { map, filter } from 'rxjs/operators';
 {{{serviceComments}}}@Injectable()
 class {{serviceClass}} extends BaseService {
   constructor(
-    config: ApiConfiguration,
     http: HttpClient
   ) {
-    super(config, http);
+    super(http);
   }
-{{#serviceOperations}}{{>operationResponse}}{{>operationBody}}{{/serviceOperations}}
+{{#serviceOperations}}{{>operationBody}}{{/serviceOperations}}
 }
 
 module {{serviceClass}} {

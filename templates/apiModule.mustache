@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
-import { ApiConfiguration } from './api-configuration';
 
 {{#services}}import { {{serviceClass}} } from './services/{{serviceFile}}';
 {{/services}}
@@ -17,7 +16,6 @@ import { ApiConfiguration } from './api-configuration';
   ],
   declarations: [],
   providers: [
-    ApiConfiguration,
 {{#services}}   {{serviceClass}}{{^serviceIsLast}},{{/serviceIsLast}}
 {{/services}}
   ],

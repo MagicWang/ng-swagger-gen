@@ -207,11 +207,11 @@ function doGenerate(swagger, options) {
     var context = {
       rootUrl: rootUrl,
     };
-    generate(
-      templates.apiConfiguration,
-      context,
-      output + '/api-configuration.ts'
-    );
+    // generate(
+    //   templates.apiConfiguration,
+    //   context,
+    //   output + '/api-configuration.ts'
+    // );
   }
 
   // Write the BaseService
@@ -366,7 +366,7 @@ function simpleRef(ref) {
   }
   var index = ref.lastIndexOf('/');
   if (index >= 0) {
-    return ref.substr(index + 1);
+    return ref.substr(index + 1).replace('«','<').replace('»','>');
   } else {
     return ref;
   }
@@ -428,6 +428,7 @@ function DependenciesResolver(models, ownType) {
  * Adds a candidate dependency
  */
 DependenciesResolver.prototype.add = function(dep) {
+  dep = dep && dep.startsWith && dep.startsWith('PageRepVo') ? 'PageRepVo' : dep;
   dep = removeBrackets(dep);
   if (this.dependencyNames.indexOf(dep) < 0 && dep !== this.ownType) {
     var depModel = this.models[dep];
@@ -488,9 +489,10 @@ function processModels(swagger, options) {
     } else {
       simpleType = propertyType(model);
     }
+    name = name.startsWith('PageRepVo') ? 'PageRepVo' : name;
     var descriptor = {
       modelName: name,
-      modelClass: name,
+      modelClass: name === 'PageRepVo'? 'PageRepVo<T>' : name,
       modelFile: toFileName(name),
       modelComments: toComments(model.description),
       modelParent: parent,
@@ -638,7 +640,7 @@ function propertyType(property) {
       }
       return 'string';
     case 'array':
-      return 'Array<' + propertyType(property.items) + '>';
+      return 'Array<' + (property.description==='内容'?'T':propertyType(property.items)) + '>';
     case 'integer':
     case 'number':
       return 'number';
@@ -782,6 +784,8 @@ function toIdentifier(string) {
         wasSep = false;
       }
       result += c;
+    } else if (/[\u4e00-\u9fa5]/.test(c)) {
+      result += c;
     } else {
       wasSep = true;
     }
@@ -807,9 +811,20 @@ function tagName(tag, options) {
  */
 function operationId(given, method, url, allKnown) {
   var id;
-  var generate = given == null;
+  // var generate = given == null;
+  var generate = true;
   if (generate) {
-    id = toIdentifier(method + url);
+    method = method.toLowerCase() || 'get';
+    var str = url.split('/').slice(4).join('/');
+    var p = str.match(/{\w+}/g);
+    if (p) {
+      str = str.replace(/\/{\w+}/g, '');
+      if (method === 'delete') {
+        str += '/delete';
+      } 
+      str += '/by/' + p.join('/');
+    }
+    id = toIdentifier(str);
   } else {
     id = given;
   }
@@ -822,15 +837,15 @@ function operationId(given, method, url, allKnown) {
     id = id + '_' + i;
   }
   if (generate) {
-    console.warn(
-      "Operation '" +
-        method +
-        "' on '" +
-        url +
-        "' defines no operationId. Assuming '" +
-        id +
-        "'."
-    );
+    // console.warn(
+    //   "Operation '" +
+    //     method +
+    //     "' on '" +
+    //     url +
+    //     "' defines no operationId. Assuming '" +
+    //     id +
+    //     "'."
+    // );
   } else if (duplicated) {
     console.warn(
       "Operation '" +
@@ -882,7 +897,7 @@ function processServices(swagger, models, options) {
       var id = operationId(
         def.operationId,
         method,
-        url,
+        method ==='post' && path.get ? url + '/save' : url,
         descriptor.operationIds
       );
 
@@ -1005,7 +1020,8 @@ function processServices(swagger, models, options) {
       operation.operationIsObject = modelResult && modelResult.modelIsObject;
       operation.operationIsPrimitiveArray =
         !modelResult && (resultType.toString().includes('Array<') ||
-          resultType.toString().includes('[]'));
+          resultType.toString().includes('[]') ||
+          resultType.toString().includes('PageRepVo<'));
       operation.operationIsFile = actualType === 'Blob';
       operation.operationResponseType =
         operation.operationIsFile ? 'blob' :

@@ -13,8 +13,7 @@
 {{#operationParameters}}{{>parameter}}
 {{/operationParameters}}
     let req = new HttpRequest<any>(
-      '{{operationMethod}}',
-      this.rootUrl + `{{{operationPathExpression}}}`,
+      '{{operationMethod}}', `{{{operationPathExpression}}}`,
       __body,
       {
         headers: __headers,
