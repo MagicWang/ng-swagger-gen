@@ -897,7 +897,7 @@ function processServices(swagger, models, options) {
       var id = operationId(
         def.operationId,
         method,
-        method ==='post' && path.get ? url + '/save' : url,
+        url,
         descriptor.operationIds
       );
 

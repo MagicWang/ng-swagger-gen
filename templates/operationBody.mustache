@@ -34,8 +34,7 @@
         }}{{#operationIsFile}}_body = _resp.body as Blob;{{/operationIsFile
         }}{{#operationIsPrimitiveArray}}_body = _resp.body as {{{operationResultType}}};{{/operationIsPrimitiveArray
         }}
-        return _resp.clone({body: _body}) as HttpResponse<{{{operationResultType}}}>;
-      }),
-      map(_r => _r.body)
+        return _body;
+      })
     );
   }
