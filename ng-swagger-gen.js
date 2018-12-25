@@ -897,7 +897,7 @@ function processServices(swagger, models, options) {
       var id = operationId(
         def.operationId,
         method,
-        url,
+        def.operationId && def.operationId.startsWith('saveUsingPOST') ? url + '/save' : url,
         descriptor.operationIds
       );
 
